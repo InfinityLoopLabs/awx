@@ -6,23 +6,20 @@ const meta = {
   component: DecimalStepper,
   args: {
     step: 0.1,
+    label: 'Decimal Stepper',
   },
   parameters: {
     layout: 'centered',
   },
 } satisfies Meta<typeof DecimalStepper>
 
-export default meta
-type Story = StoryObj<typeof meta>
+type StoryType = StoryObj<typeof meta>
 
-export const Playground: Story = {
+export const Playground: StoryType = {
   args: {
     step: 0.1,
+    label: 'Decimal Stepper',
   },
 }
 
-export const IntegerStep: Story = {
-  args: {
-    step: 1,
-  },
-}
+export default meta
