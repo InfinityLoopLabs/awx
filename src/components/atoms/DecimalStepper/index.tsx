@@ -1,10 +1,10 @@
-import { FC, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 import { Button, TextField } from '@mui/material'
 import Decimal from 'decimal.js'
 
 type OwnPropertyType = {
-  step: number | bigint
-  label: number | bigint
+  step: number
+  label: string
 }
 
 export const DecimalStepper: FC<OwnPropertyType> = ({
@@ -15,14 +15,16 @@ export const DecimalStepper: FC<OwnPropertyType> = ({
   const [hasError, setHasError] = useState<boolean>(false)
 
   const onChangeInputHandler = (value: string) => {
-    if (!value) {
-      setHasError(true)
-
-      return
-    }
-
     try {
       const normalized = value.replace(/,/g, '.')
+
+      if (!normalized.trim()) {
+        setDecimalValue(new Decimal(0))
+        setHasError(false)
+
+        return
+      }
+
       const nextValue = new Decimal(normalized)
       setDecimalValue(nextValue)
       setHasError(false)
@@ -35,24 +37,45 @@ export const DecimalStepper: FC<OwnPropertyType> = ({
     let stepDecimal: Decimal
 
     try {
-      stepDecimal = new Decimal(
-        typeof step === 'bigint' ? step.toString() : String(step),
-      )
-    } catch (error) {
+      stepDecimal = new Decimal(String(step))
+    } catch (_) {
       setHasError(true)
 
       return
     }
 
+    setHasError(false)
+
     setDecimalValue(prev => {
-      const nextValue =
-        action === '+' ? prev.add(stepDecimal) : prev.sub(stepDecimal)
-
-      setHasError(false)
-
-      return nextValue
+      switch (action) {
+        case '+': {
+          return prev.add(stepDecimal)
+        }
+        case '-': {
+          return prev.sub(stepDecimal)
+        }
+        default:
+          return prev
+      }
     })
   }
+
+  useEffect(() => {
+    try {
+      const stepDecimal = new Decimal(String(step))
+
+      if (stepDecimal.isZero()) {
+        setHasError(false)
+
+        return
+      }
+
+      const remainder = decimalValue.mod(stepDecimal)
+      setHasError(!remainder.isZero())
+    } catch (_) {
+      setHasError(true)
+    }
+  }, [decimalValue, step])
 
   const controlSize = 56
 
